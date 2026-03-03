@@ -13,72 +13,12 @@ Remote: `https://github.com/dcharb-darwin/staff-sync.git`
 
 ---
 
-## PITFALLS (read first — lessons from previous projects)
+## ⚠️ Standards — READ FIRST
 
-### P1: Drizzle `await` Required
-Drizzle v0.45+ returns Promises even for SQLite. **Always `await`** on `.insert().returning()`, `.select()`, `.update()`, `.delete()`, `.run()`. Missing `await` causes `TypeError: object is not iterable`.
+> **All pitfalls (P1–P10) and design principles (D1–D3) are in [`agents/standards.md`](agents/standards.md).**
+> Workers, orchestrator, and QA all reference this single file. Update rules there — not here.
 
-### P2: Theme Must Default to Light
-Always set `defaultTheme="light"` on ThemeProvider. Never use `"system"` — it caused dark-mode lock-in on TaskLine that required a full code audit to fix.
-
-### P3: Navigation Structure is Locked Early
-Navigation redesign mid-build broke TaskLine and required a full git revert. Define nav structure in Phase 0, then only add pages — never reorganize routes after initial setup.
-
-### P4: Badge/Tag Contrast
-Low-contrast badges (dark text on dark bg) caused readability failures in TaskLine. Always use the oklch token pairs (`--foreground` on `--background` variants). Test readability in QA.
-
-### P5: No Sensitive PII
-Staff Sync never stores SSN, home address, DOB, bank info, compensation, or benefits data. This is a **hard boundary** — PRD §3.2. Code review and QA must verify this.
-
-### P6: Worker File Conflicts
-Claude Code and Codex share the filesystem. Never dispatch two workers to the same file. Assign non-overlapping file targets per dispatch.
-
-### P7: Vite configFile in Docker
-When creating Vite programmatically in `server/_core/index.ts`, always pass `configFile: path.resolve(import.meta.dirname, '../../vite.config.ts')`. Without it, Vite looks for config inside `client/` (the root) — works locally by accident but fails in Docker.
-
-### P8: Docker Required for Browser QA
-The `browser_subagent` tool uses Playwright in Docker. If Docker Desktop is not running, `open_browser_url` fails with `ERR_CONNECTION_REFUSED`.
-
-### P9: Vite Alias Keys — No Trailing Slash
-Use `"@"` not `"@/"` as Vite alias keys. Trailing slashes don't match imports like `@/lib/trpc`.
-
-### P10: Shared Components Must Use Controlled Props
-Never use internal state in a reusable component when the parent also needs that state. `ViewToggle` originally created its own `useViewMode()` state — but the parent page also called `useViewMode()`. Two independent React state instances don't synchronize. **Always pass `mode`/`onModeChange` from the parent** (standard controlled component pattern).
-
----
-
-## DESIGN PRINCIPLES (enforced on all UI work)
-
-### D1: Universal Drill-Down + Source Provenance
-Every data item displayed in the UI **must be clickable** and navigate to its detail view. Every detail view must show **where the data came from** — link to the source document, system, or process that generated it.
-
-- KPI card → drill into the list of entities that compose that number
-- Employee name → navigate to process detail
-- Process badge → navigate to process detail
-- Task → show owner, timestamps, and source SOP/checklist reference
-- Validation check → show which system (AD, Infor, form) the data was compared against
-- Form fields → reference which SOP section defines that field
-
-**Pattern:** Use `<Link>` from wouter on all identifiers, badges, and counts. Never display a data point that can't be explored further.
-
-### D2: Card ↔ List Toggle
-Wherever data is displayed as cards (KPI grid, employee cards, process cards), provide a **toggle to switch between card view and list/table view**. Use a shared `ViewToggle` component with icons (LayoutGrid / List from lucide-react).
-
-- Dashboard KPI breakdown → toggle to table
-- Process list → toggle between cards and compact table rows
-- Readiness employees → toggle between cards and table
-- Store preference in localStorage so it persists
-
-### D3: Visual Parity Across Darwin Projects
-Staff Sync must be **indistinguishable in look and feel** from TaskLine and Invoice Processing. Same:
-- oklch design tokens (blue-600 accent, slate-50 bg, white cards, shadow-sm)
-- shadcn/ui component patterns (Card, Badge, Button variants)
-- Typography (InterVariable / system-ui stack)
-- Spacing (container utility, py-8 main, p-6 cards)
-- Navigation pattern (sticky header, blue-50 active highlight)
-- Animation patterns (framer-motion for page transitions, hover states on interactive elements)
-
-> If you build a component and it looks different from the same component in TaskLine, it's wrong.
+**Critical (never violate):** `await` ALL Drizzle ops | Light theme only | No PII ever
 
 ---
 
@@ -94,7 +34,7 @@ Staff Sync must be **indistinguishable in look and feel** from TaskLine and Invo
 | Codex CLI | `codex exec "<prompt>"` | `codex-instructions.md` |
 | Browser QA | `browser_subagent` | N/A |
 
-### Dispatch Syntax (corrected — see `.agents/workflows/dispatch.md` for full details)
+### Dispatch Syntax
 
 ```bash
 # Claude Code — direct invocation (DO NOT use screen+tee — produces empty logs)
@@ -126,23 +66,12 @@ FILES TO EDIT: [Explicit list — prevents worker overlap]"
 
 ---
 
-## Memory Bank (simplified from LakeStevens)
-
-LakeStevens used 7 memory bank files — they went stale mid-session. Staff Sync uses 2:
-
-| File | Purpose | Update Cadence |
-|------|---------|---------------|
-| `agents/sessions.md` | Append-only session log: date, what was built, decisions made | After every phase |
-| `agents/lessons.md` | Pitfalls, gotchas, things that broke | When something breaks |
-
----
-
 ## Schema Change Rules
 
 When modifying `server/db/schema.ts`:
 
 1. **New fields must be nullable** or have a default so existing data is unaffected.
-2. **`await` on ALL Drizzle operations** — see PITFALL P1.
+2. **`await` on ALL Drizzle operations** — see P1 in `agents/standards.md`.
 3. Run `npm run check` immediately after schema changes.
 
 ## Git & Worktree Flow
@@ -195,4 +124,12 @@ Port 3000 serves Express + Vite dev middleware. Data volume persists SQLite DB.
 ## QA Protocol
 
 Follow `.agents/workflows/qa.md` after every phase. QA uses Docker + `browser_subagent`.
-**Prerequisite:** Docker Desktop must be running (P8).
+**Prerequisite:** Docker Desktop must be running (P8 in `agents/standards.md`).
+
+## Memory Bank
+
+| File | Purpose | Update Cadence |
+|------|---------|----------------|
+| `agents/sessions.md` | Append-only session log | After every phase |
+| `agents/lessons.md` | Pitfalls, gotchas, things that broke | When something breaks |
+| `agents/standards.md` | Pitfalls P1–P10 + Design Principles D1–D3 | When rules change |

@@ -1,24 +1,19 @@
 # Codex CLI — Project Instructions
 
-> This file provides context for OpenAI Codex CLI when working in this project.
-> It syncs with `AGENTS.md` (the master config) — do not diverge.
+> Context for OpenAI Codex CLI when working in this project.
 
-## ⚠️ PITFALLS — Read Before Anything
+## ⚠️ CRITICAL — Never Violate
 
-1. **`await` ALL Drizzle operations.** Drizzle v0.45+ returns Promises even on SQLite. Missing `await` → `TypeError: object is not iterable`.
-2. **Theme = "light" always.** `defaultTheme="light"` on ThemeProvider. Never `"system"` or `"dark"`.
-3. **No PII anywhere.** No SSN, home address, DOB, bank info, compensation, benefits. Hard boundary from PRD §3.2.
-4. **Role visibility.** Data display must respect PRD §6.2 visibility matrix.
-5. **Badge contrast.** Use oklch token pairs. Dark text on dark background caused readability failures on TaskLine.
+> **`await` ALL Drizzle ops | Light theme only | No PII ever**
+> **Full rules: [`agents/standards.md`](agents/standards.md) — READ BEFORE CODING**
 
 ---
 
 ## Project Overview
 
 **Staff Sync** — MVP mockup for COTA HR onboarding/transfer/offboarding tracking.
-
 **Stack:** React 19 / Vite / tRPC / Drizzle / SQLite / TailwindCSS v4 / shadcn/ui
-**Design:** Matches TaskLine — light mode default, blue-600 accent, oklch tokens
+**Design:** Matches TaskLine — light mode, blue-600 accent, oklch tokens
 **Note:** Mockup — AD and Infor data simulated via seed data.
 
 ## Architecture Map
@@ -34,7 +29,8 @@ server/
 
 client/src/
 ├── main.tsx, App.tsx, index.css
-├── components/ (AppLayout, ui/)
+├── lib/ (trpc.ts, utils.ts, badge-styles.ts)
+├── components/ (AppLayout, ViewToggle, ui/)
 └── pages/ (Dashboard, Processes, ProcessDetail, EISForm, Readiness)
 
 shared/types.ts
@@ -45,13 +41,12 @@ shared/types.ts
 | Table | Key Fields | Notes |
 |-------|-----------|-------|
 | `users` | name, email, role | 6 roles per PRD §6.1 |
-| `employees` | firstName, lastName, badgeNumber, employeeId, startDate | Non-sensitive only |
+| `employees` | firstName, lastName, badgeNumber, startDate | Non-sensitive only |
 | `processes` | employeeId, processType, status | onboarding/transfer/offboarding |
 | `tasks` | processId, description, ownerId, status, sortOrder | Ordered checklist |
-| `eisBoisForms` | processId, formType, section1Data (JSON), section2Data (JSON) | Web-first form |
+| `eisBoisForms` | processId, formType, section1Data/section2Data (JSON) | Web-first form |
 | `validationChecks` | processId, checkType, status (pass/warning/fail) | Day-one readiness |
-| `adMockData` | email, displayName, accountEnabled, memberOf (JSON) | Simulated AD |
-| `inforMockData` | employeeId, email, name, jobTitle | Simulated Infor |
+| `adMockData` / `inforMockData` | Simulated external systems | Mock AD + Infor |
 
 ## Critical Conventions
 
@@ -60,16 +55,8 @@ shared/types.ts
 - **JSON fields** for EIS/BOIS form sections
 - **Tasks ordered** by `sortOrder`
 - **`data/` directory** must exist before SQLite DB opens
-- **Always `await`** Drizzle operations
-
-## Design Principles (MANDATORY — see AGENTS.md for full details)
-
-**D1: Universal Drill-Down + Source Provenance.** Every data item shown must be clickable → navigates to detail. Every detail view shows where data came from (system name, SOP reference, source document link). Never display a data point that can't be explored.
-
-**D2: Card ↔ List Toggle.** Wherever cards are used, add a toggle to switch to list/table view. Use `ViewToggle` component (LayoutGrid / List icons). Store preference in localStorage.
-
-**D3: Visual Parity.** Must be indistinguishable from TaskLine and Invoice Processing. Same oklch tokens, shadcn patterns, spacing, typography, animations. If it looks different from TaskLine, it's wrong.
+- **Badge styles** — import from `@/lib/badge-styles`, never define locally
 
 ## Read Order (MANDATORY)
 
-1. `AGENTS.md` → 2. `PRD.MD` → 3. This file
+1. `agents/standards.md` → 2. `PRD.MD` → 3. This file

@@ -1,60 +1,47 @@
 # CLAUDE.md — Project Instructions for Claude Code
 
-> This file is read automatically by Claude Code CLI when working in this project.
-> It syncs with `AGENTS.md` (the master config) — do not diverge.
+> Read automatically by Claude Code CLI. Single-file worker context.
 
-## ⚠️ PITFALLS — Read Before Anything
+## ⚠️ CRITICAL — Never Violate
 
-1. **`await` ALL Drizzle operations.** Drizzle v0.45+ returns Promises even on SQLite. Missing `await` → `TypeError: object is not iterable`.
-2. **Theme = "light" always.** `defaultTheme="light"` on ThemeProvider. Never `"system"` or `"dark"` — caused lock-in on TaskLine.
-3. **No PII anywhere.** No SSN, home address, DOB, bank info, compensation, benefits. Hard boundary from PRD §3.2.
-4. **Role visibility.** Data display must respect PRD §6.2 visibility matrix. Hiring managers see only their own hires. HRIS analysts see only reconciliation data.
-5. **Badge contrast.** Use oklch token pairs. Dark text on dark background caused readability failures on TaskLine.
+> **`await` ALL Drizzle ops | Light theme only | No PII ever**
+> **Full rules: [`agents/standards.md`](agents/standards.md) — READ BEFORE CODING**
 
 ---
 
 ## Project Overview
 
 **Staff Sync** — MVP mockup for COTA HR onboarding/transfer/offboarding tracking.
-Tracks employee lifecycle processes, auto-generates EIS/BOIS forms, and validates day-one readiness across disconnected systems.
-
 **Stack:** React 19 / Vite / tRPC / Drizzle / SQLite / TailwindCSS v4 / shadcn/ui
 **Design:** Matches TaskLine — light mode default, blue-600 accent, oklch tokens
-**Note:** This is a mockup — AD and Infor data is simulated via seed data in SQLite.
+**Note:** Mockup — AD and Infor data simulated via seed data in SQLite.
 
-## Architecture Map (ALWAYS reference before building)
+## Architecture Map
 
 ```
 server/
 ├── _core/
 │   └── index.ts          ← Express server, tRPC middleware, Vite dev middleware
 ├── db/
-│   ├── schema.ts         ← Drizzle ORM — 8 tables (employees, processes, tasks, forms, validations, mock AD/Infor)
-│   ├── index.ts          ← DB connection (better-sqlite3, WAL mode, ensures data/ dir exists)
-│   └── seed.ts           ← Mock data: bus operator class of 8, admin hires, transfers, rehire with mismatch
+│   ├── schema.ts         ← Drizzle ORM — 8 tables
+│   ├── index.ts          ← DB connection (better-sqlite3, WAL mode)
+│   └── seed.ts           ← Mock data: bus operators, admin hires, transfers
 └── routers.ts            ← tRPC routers: dashboard, processes, employees, tasks, forms, validation
 
-client/
-├── index.html            ← HTML entry point
-└── src/
-    ├── main.tsx           ← React entry, tRPC + React Query providers
-    ├── index.css          ← TailwindCSS v4 + oklch design tokens (light/dark)
-    ├── App.tsx            ← Routing (wouter), ThemeProvider (default: light), providers
-    ├── lib/
-    │   ├── trpc.ts        ← tRPC React client
-    │   └── utils.ts       ← cn() merge utility
-    ├── components/
-    │   ├── AppLayout.tsx  ← App shell — sticky header, Staff Sync branding, nav links
-    │   └── ui/            ← shadcn/ui primitives (card, button, badge, dialog, etc.)
-    └── pages/
-        ├── Dashboard.tsx      ← KPI cards, active processes, readiness alerts
-        ├── Processes.tsx      ← Process list with type/status/date filters
-        ├── ProcessDetail.tsx  ← Task checklist, EIS/BOIS form status, validation results
-        ├── EISForm.tsx        ← EIS/BOIS form (Section 1 HR entry + Section 2 hiring manager)
-        └── Readiness.tsx      ← Day-one readiness dashboard (per-employee + per-class)
+client/src/
+├── main.tsx, App.tsx, index.css
+├── lib/
+│   ├── trpc.ts           ← tRPC React client
+│   ├── utils.ts          ← cn() merge utility
+│   └── badge-styles.ts   ← Shared badge style maps (single source of truth)
+├── components/
+│   ├── AppLayout.tsx     ← App shell — sticky header, nav links
+│   ├── ViewToggle.tsx    ← Card/list toggle (controlled: mode/onModeChange props)
+│   └── ui/               ← shadcn/ui primitives
+└── pages/
+    ├── Dashboard.tsx, Processes.tsx, ProcessDetail.tsx, EISForm.tsx, Readiness.tsx
 
-shared/
-└── types.ts               ← Shared type definitions
+shared/types.ts            ← Shared type definitions + label maps
 ```
 
 ## Database Schema (8 tables)
@@ -62,35 +49,25 @@ shared/
 | Table | Key Fields | Notes |
 |-------|-----------|-------|
 | `users` | name, email, role | 6 roles per PRD §6.1 |
-| `employees` | firstName, lastName, badgeNumber, employeeId, startDate, employeeType | Non-sensitive only |
-| `processes` | employeeId, processType (onboarding/transfer/offboarding), status | Polymorphic lifecycle |
-| `tasks` | processId, description, ownerId, ownerRole, status, sortOrder | Ordered checklist |
-| `eisBoisForms` | processId, formType (eis/bois), section1Data (JSON), section2Data (JSON) | Web-first form |
-| `validationChecks` | processId, checkType, status (pass/warning/fail), details | Day-one readiness |
-| `adMockData` | email, displayName, accountEnabled, memberOf (JSON) | Simulated AD |
-| `inforMockData` | employeeId, email, name, jobTitle | Simulated Infor |
+| `employees` | firstName, lastName, badgeNumber, startDate | Non-sensitive only |
+| `processes` | employeeId, processType, status | onboarding/transfer/offboarding |
+| `tasks` | processId, description, ownerId, status, sortOrder | Ordered checklist |
+| `eisBoisForms` | processId, formType, section1Data/section2Data (JSON) | Web-first form |
+| `validationChecks` | processId, checkType, status (pass/warning/fail) | Day-one readiness |
+| `adMockData` / `inforMockData` | Simulated AD + Infor | Mock external systems |
 
 ## Critical Conventions
 
-- **Design matches TaskLine** — light mode default, blue-600 accent, InterVariable font, oklch tokens
 - **Dates as ISO strings** — stored in DB, parsed with date-fns on client
-- **JSON fields** for form section data — keeps schema flexible for EIS vs BOIS variants
-- **Process tasks ordered** by `sortOrder` — represents the step sequence from PRD §2.7
-- **Validation checks** match PRD §2.8 pass/warning/fail criteria exactly
-- **`data/` directory** must exist before opening SQLite DB — create in db/index.ts
+- **JSON fields** for form section data — flexible for EIS vs BOIS variants
+- **Tasks ordered** by `sortOrder` — step sequence from PRD §2.7
+- **`data/` directory** must exist before opening SQLite DB
+- **Badge styles** — import from `@/lib/badge-styles`, never define locally
 
-## Design Principles (MANDATORY — see AGENTS.md for full details)
+## Read Order (MANDATORY)
 
-**D1: Universal Drill-Down + Source Provenance.** Every data item shown must be clickable → navigates to detail. Every detail view shows where data came from (system name, SOP reference, source document link). Never display a data point that can't be explored.
-
-**D2: Card ↔ List Toggle.** Wherever cards are used, add a toggle to switch to list/table view. Use `ViewToggle` component (LayoutGrid / List icons). Store preference in localStorage.
-
-**D3: Visual Parity.** Must be indistinguishable from TaskLine and Invoice Processing. Same oklch tokens, shadcn patterns, spacing, typography, animations. If it looks different from TaskLine, it's wrong.
-
-## Before Every Session — Read Order (MANDATORY)
-
-1. `AGENTS.md` — orchestration protocol, pitfalls, gating rules
-2. `PRD.MD` — full business requirements, process flows, user stories, data classification
+1. `agents/standards.md` — pitfalls P1–P10 + design principles D1–D3
+2. `PRD.MD` — business requirements, process flows, data classification
 3. This file — architecture map, schema, conventions
 
 ## After Every Change
