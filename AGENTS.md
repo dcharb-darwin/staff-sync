@@ -42,6 +42,9 @@ The `browser_subagent` tool uses Playwright in Docker. If Docker Desktop is not 
 ### P9: Vite Alias Keys — No Trailing Slash
 Use `"@"` not `"@/"` as Vite alias keys. Trailing slashes don't match imports like `@/lib/trpc`.
 
+### P10: Shared Components Must Use Controlled Props
+Never use internal state in a reusable component when the parent also needs that state. `ViewToggle` originally created its own `useViewMode()` state — but the parent page also called `useViewMode()`. Two independent React state instances don't synchronize. **Always pass `mode`/`onModeChange` from the parent** (standard controlled component pattern).
+
 ---
 
 ## DESIGN PRINCIPLES (enforced on all UI work)

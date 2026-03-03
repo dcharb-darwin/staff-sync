@@ -75,3 +75,31 @@ Use `run_command` with large `WaitMsBeforeAsync` (300000) and monitor via `comma
 **`npm run dev | head -30` blocks.** Piping the dev server through `head` causes the shell to wait for the pipe to close, which never happens since the server keeps running. Use `run_command` with background (`WaitMsBeforeAsync: 10000`) instead, then check logs separately.
 
 **Always delete stale DB before restart.** `rm -f data/staff-sync.db` before `npm run dev` ensures clean seed data. Otherwise the seed check (`if users > 0, skip`) keeps old potentially-mismatched data.
+
+---
+
+## Session 2 — Design Principles + Full Audit (2026-03-02)
+
+### Shared Component State (ViewToggle Bug)
+
+**Never use internal state in a reusable component when the parent also needs that state.** The `ViewToggle` component originally used its own `useViewMode()` hook internally AND the parent page called `useViewMode()` separately — creating two independent React state instances. They shared the same localStorage key, so the toggle button *looked* correct, but the parent's rendering logic never re-rendered.
+
+**Fix:** Reusable UI components that affect parent rendering MUST use controlled props (`mode`/`onModeChange`). Parent owns state via the hook, passes it down. This is standard React controlled component pattern — enforce it on all shared components.
+
+**Pipeline impact:** Added as guidance in dispatch prompts: "ViewToggle accepts `mode` and `onModeChange` props — parent drives state via `useViewMode()` hook."
+
+### Design Principles Before Code
+
+**Codify design principles BEFORE building pages, not after.** Session 1 built all 5 pages without D1/D2/D3 rules → required a full audit + 15 fixes across 8 files. Session 2 added D1-D3 first → all future dispatches will enforce them automatically because they're in CLAUDE.md/codex-instructions.md.
+
+**Pattern:** PRD defines WHAT → Design Principles define HOW → THEN dispatch page work.
+
+### Shared Infrastructure Gating Works
+
+**Creating shared files (badge-styles.ts, ViewToggle.tsx, types.ts additions) BEFORE dispatching page edits to Claude** prevented merge conflicts, ensured all pages import from one source, and eliminated badge color inconsistencies. This validates Gating Rule #1.
+
+### Claude Dispatch: Explicit Rendering Instructions
+
+**Claude workers add components but may not wire conditional rendering.** Two workers correctly imported ViewToggle and added `useViewMode` state, but didn't always connect the state to `{viewMode === "card" ? <CardLayout> : <ListLayout>}` branches. 
+
+**Fix:** When dispatching view-mode work, explicitly state: "When card mode: render `<div className='grid grid-cols-3'>` with `<Card>` per item. When list mode: render existing layout. Use `viewMode === 'card' ? (...) : (...)` ternary."
