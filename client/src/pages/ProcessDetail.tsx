@@ -35,6 +35,8 @@ import {
     typeBadgeClass,
     statusBadgeClass,
     taskStatusBadgeClass,
+    validationStatusBadgeClass,
+    formTypeBadgeClass,
 } from "@/lib/badge-styles";
 import { format } from "date-fns";
 
@@ -246,9 +248,7 @@ export default function ProcessDetail() {
                             </span>
                             <Badge
                                 className={
-                                    form.formType === "eis"
-                                        ? "bg-blue-100 text-blue-700"
-                                        : "bg-purple-100 text-purple-700"
+                                    formTypeBadgeClass[form.formType] ?? ""
                                 }
                             >
                                 {form.formType.toUpperCase()}
@@ -349,11 +349,7 @@ export default function ProcessDetail() {
                         {overallReadiness && (
                             <Badge
                                 className={
-                                    overallReadiness === "pass"
-                                        ? "bg-green-100 text-green-700"
-                                        : overallReadiness === "warning"
-                                          ? "bg-amber-100 text-amber-700"
-                                          : "bg-red-100 text-red-700"
+                                    validationStatusBadgeClass[overallReadiness] ?? ""
                                 }
                             >
                                 {overallReadiness === "pass"

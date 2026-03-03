@@ -26,6 +26,7 @@ import {
     type ValidationCheckType,
 } from "@shared/types";
 import { ViewToggle, useViewMode } from "@/components/ViewToggle";
+import { validationStatusBadgeClass } from "@/lib/badge-styles";
 import { format, addDays, isWithinInterval } from "date-fns";
 
 function ReadinessIcon({
@@ -155,7 +156,7 @@ export default function Readiness() {
                             <CheckCircle className="h-6 w-6 text-green-600" />
                         </div>
                         <div>
-                            <p className="text-2xl font-bold text-green-700">
+                            <p className="text-2xl font-bold text-green-800">
                                 {readyCount}
                             </p>
                             <p className="text-sm text-green-600">
@@ -174,7 +175,7 @@ export default function Readiness() {
                             <AlertTriangle className="h-6 w-6 text-amber-500" />
                         </div>
                         <div>
-                            <p className="text-2xl font-bold text-amber-700">
+                            <p className="text-2xl font-bold text-amber-800">
                                 {warningCount}
                             </p>
                             <p className="text-sm text-amber-600">
@@ -193,7 +194,7 @@ export default function Readiness() {
                             <XCircle className="h-6 w-6 text-red-600" />
                         </div>
                         <div>
-                            <p className="text-2xl font-bold text-red-700">
+                            <p className="text-2xl font-bold text-red-800">
                                 {failCount}
                             </p>
                             <p className="text-sm text-red-600">
@@ -213,11 +214,7 @@ export default function Readiness() {
                         {statusFilter && (
                             <Badge
                                 className={
-                                    statusFilter === "pass"
-                                        ? "bg-green-100 text-green-700"
-                                        : statusFilter === "warning"
-                                            ? "bg-amber-100 text-amber-700"
-                                            : "bg-red-100 text-red-700"
+                                    validationStatusBadgeClass[statusFilter] ?? ""
                                 }
                             >
                                 {statusFilter === "pass" ? "Passing" : statusFilter === "warning" ? "Attention" : "Not Ready"}
@@ -314,13 +311,11 @@ function EmployeeCard({
                         <span className="font-medium text-sm truncate">{employeeName}</span>
                         <div className="shrink-0">
                             {overallStatus === "unknown" ? (
-                                <Badge className="bg-slate-100 text-slate-600">No Checks</Badge>
-                            ) : overallStatus === "pass" ? (
-                                <Badge className="bg-green-100 text-green-700">Ready</Badge>
-                            ) : overallStatus === "warning" ? (
-                                <Badge className="bg-amber-100 text-amber-700">Attention</Badge>
+                                <Badge className="bg-slate-100 text-slate-700">No Checks</Badge>
                             ) : (
-                                <Badge className="bg-red-100 text-red-700">Not Ready</Badge>
+                                <Badge className={validationStatusBadgeClass[overallStatus] ?? ""}>
+                                    {overallStatus === "pass" ? "Ready" : overallStatus === "warning" ? "Attention" : "Not Ready"}
+                                </Badge>
                             )}
                         </div>
                     </div>
@@ -420,20 +415,12 @@ function EmployeeRow({
                 </div>
                 <div className="shrink-0">
                     {overallStatus === "unknown" ? (
-                        <Badge className="bg-slate-100 text-slate-600">
+                        <Badge className="bg-slate-100 text-slate-700">
                             No Checks
                         </Badge>
-                    ) : overallStatus === "pass" ? (
-                        <Badge className="bg-green-100 text-green-700">
-                            Ready
-                        </Badge>
-                    ) : overallStatus === "warning" ? (
-                        <Badge className="bg-amber-100 text-amber-700">
-                            Attention
-                        </Badge>
                     ) : (
-                        <Badge className="bg-red-100 text-red-700">
-                            Not Ready
+                        <Badge className={validationStatusBadgeClass[overallStatus] ?? ""}>
+                            {overallStatus === "pass" ? "Ready" : overallStatus === "warning" ? "Attention" : "Not Ready"}
                         </Badge>
                     )}
                 </div>

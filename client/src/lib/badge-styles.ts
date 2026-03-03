@@ -7,27 +7,32 @@ import type { ProcessType, ProcessStatus, TaskStatus } from "@shared/types";
  */
 
 export const typeBadgeClass: Record<ProcessType, string> = {
-    onboarding: "bg-blue-100 text-blue-700 border-blue-200",
-    transfer: "bg-amber-100 text-amber-700 border-amber-200",
-    offboarding: "bg-red-100 text-red-700 border-red-200",
+    onboarding: "bg-blue-100 text-blue-800 border-blue-200",
+    transfer: "bg-amber-100 text-amber-800 border-amber-200",
+    offboarding: "bg-red-100 text-red-800 border-red-200",
 };
 
 export const statusBadgeClass: Record<ProcessStatus, string> = {
-    initiated: "border-slate-300 text-slate-600",
-    in_progress: "bg-blue-100 text-blue-700 border-blue-200",
-    pending_review: "bg-amber-100 text-amber-700 border-amber-200",
-    completed: "bg-green-100 text-green-700 border-green-200",
+    initiated: "border-slate-300 text-slate-700",
+    in_progress: "bg-blue-100 text-blue-800 border-blue-200",
+    pending_review: "bg-amber-100 text-amber-800 border-amber-200",
+    completed: "bg-green-100 text-green-800 border-green-200",
 };
 
 export const taskStatusBadgeClass: Record<TaskStatus, string> = {
     pending: "bg-slate-100 text-slate-700",
-    in_progress: "bg-blue-100 text-blue-700",
-    completed: "bg-green-100 text-green-700",
-    skipped: "bg-slate-50 text-slate-400",
+    in_progress: "bg-blue-100 text-blue-800",
+    completed: "bg-green-100 text-green-800",
+    skipped: "bg-slate-50 text-slate-500",
 };
 
 export const validationStatusBadgeClass: Record<string, string> = {
-    pass: "bg-green-100 text-green-700",
-    warning: "bg-amber-100 text-amber-700",
-    fail: "bg-red-100 text-red-700",
+    pass: "bg-green-100 text-green-800",
+    warning: "bg-amber-100 text-amber-800",
+    fail: "bg-red-100 text-red-800",
+};
+
+export const formTypeBadgeClass: Record<string, string> = {
+    eis: "bg-blue-100 text-blue-800 border-blue-200",
+    bois: "bg-teal-100 text-teal-800 border-teal-200",
 };
