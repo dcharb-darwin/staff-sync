@@ -35,9 +35,12 @@ Run via `run_command` with `WaitMsBeforeAsync: 300000` and monitor with `command
 ## Dispatch Pattern (Codex CLI)
 
 ```bash
-# Codex needs TTY — use script wrapper
-script -q /dev/null codex --full-auto "Read codex-instructions.md first. TASK: ..."
+# Codex exec — bypass supermemory gate (our agentic pipeline has its own memory)
+CODEX_SKIP_MEMORY_GATE=1 /opt/homebrew/bin/codex exec 'Read codex-instructions.md first. TASK: ...'
 ```
+
+> **Note:** `codex exec` is the non-interactive subcommand. Do NOT use `--full-auto` (deprecated in v0.107+).
+> Direct binary path bypasses the `.zshrc` shell function that routes through `codex-memory-gate`.
 
 ## Parallel Dispatch
 

@@ -128,3 +128,17 @@ Use `run_command` with large `WaitMsBeforeAsync` (300000) and monitor via `comma
 **Write foundational docs first.** DATA_MODEL.md should be written before PRDs since both reference it. MVP_PRD before VISION_PRD since Vision references MVP scope.
 
 **Screenshots use relative paths for GitHub rendering.** All image embeds must use `screenshots/mvp-dashboard.png` (relative to `docs/`), not absolute paths, so they render correctly on GitHub.
+
+### Codex CLI Troubleshooting (Session 3 continued)
+
+**Root cause of codex hangs: `codex-memory-gate` wrapper.** `.zshrc` had a shell function that intercepted `codex exec` and routed it through `codex-memory-gate` — a bash wrapper that calls `https://api.supermemory.ai/v4/search` in strict mode. The supermemory API now returns HTTP 404, causing the wrapper to hang indefinitely.
+
+**Fix: bypass env var (`CODEX_SKIP_MEMORY_GATE=1`).** Instead of removing supermemory entirely (which native Codex app needs), added a bypass check to the shell function. Agentic dispatches set the flag, native usage goes through supermemory.
+
+**Correct dispatch pattern for codex v0.107+:**
+```bash
+CODEX_SKIP_MEMORY_GATE=1 /opt/homebrew/bin/codex exec 'prompt here'
+```
+- Use `codex exec` (not `--full-auto`, which is deprecated/non-interactive mode)
+- Use direct binary path `/opt/homebrew/bin/codex` to bypass the shell function entirely
+- No `script -q` TTY wrapper needed with `codex exec`
