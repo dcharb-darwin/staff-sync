@@ -1,23 +1,32 @@
 ---
-description: Spin up the dev server for real-time QA and browser testing
+description: Spin up the dev server in Docker for real-time QA and browser testing
 ---
 
-## Live QA Workflow
+## Live QA Workflow (Docker)
 
 // turbo-all
 
-### Start Dev Server
-1. Run the dev server:
+### Start Dev Server (Docker)
+1. Build and start the container:
 ```bash
-npm run dev
+docker compose up --build -d
 ```
+
+2. Verify the container started:
+```bash
+docker compose logs --tail 5
+```
+Look for: `Staff Sync server running on http://localhost:3000`
+
+If you see errors, check `docker compose logs` for details and fix before proceeding.
+
 The app will be available at **http://localhost:3000**.
 
 ### Browser QA
-2. Use the `browser_subagent` tool to open http://localhost:3000 and verify the following. Each check is mandatory.
+3. Use the `browser_subagent` tool to open http://localhost:3000 and verify. Each check is mandatory.
 
 **Pre-Flight (every QA session)**
-- App loads without console errors
+- App loads without Vite error overlay
 - Theme is LIGHT mode (white/slate background, not dark) — **P2 check**
 - No PII visible (no SSN, home address, DOB, compensation) — **P5 check**
 
@@ -28,7 +37,7 @@ The app will be available at **http://localhost:3000**.
 - All badges/tags are readable (good contrast) — **P4 check**
 
 **Processes**
-- Process list loads with filter controls (type, status, date)
+- Process list loads with filter controls (type, status)
 - Filters update the list correctly
 - Click on a process row navigates to ProcessDetail
 
@@ -41,13 +50,12 @@ The app will be available at **http://localhost:3000**.
 **EIS/BOIS Form**
 - Section 1 fields render (name, badge #, employee ID, job title, department, start date, type)
 - Section 2 fields render (profile to copy, laptop, peripherals, map drives, instructions)
-- Form is interactive — fields can be filled and saved
+- Form is interactive — fields can be filled
 
 **Day-One Readiness**
 - Employees with upcoming start dates displayed
 - Validation results with pass (green) / warning (amber) / fail (red) indicators
-- Run readiness check button triggers mock validation
-- Per-class summary shows Ready / Needs Attention / Not Ready counts
+- Summary: Ready / Needs Attention / Not Ready counts
 
 **Navigation (cross-cutting) — P3 check**
 - All nav links (Dashboard, Processes, Readiness) navigate correctly
@@ -61,11 +69,14 @@ The app will be available at **http://localhost:3000**.
 - Spacing and padding match TaskLine patterns
 
 ### Stop Dev Server
-3. When done, stop the server with Ctrl+C or by terminating the command.
+4. When done:
+```bash
+docker compose down
+```
 
-### Automated Verification
-4. Run the full verification gate:
+### Automated Verification (local, not Docker)
+5. Run the full verification gate locally:
 ```bash
 npm run verify
 ```
-This runs TypeScript check + production build.
+This runs TypeScript check + production build without Docker.

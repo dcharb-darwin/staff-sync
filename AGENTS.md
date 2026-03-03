@@ -33,6 +33,15 @@ Staff Sync never stores SSN, home address, DOB, bank info, compensation, or bene
 ### P6: Worker File Conflicts
 Claude Code and Codex share the filesystem. Never dispatch two workers to the same file. Assign non-overlapping file targets per dispatch.
 
+### P7: Vite configFile in Docker
+When creating Vite programmatically in `server/_core/index.ts`, always pass `configFile: path.resolve(import.meta.dirname, '../../vite.config.ts')`. Without it, Vite looks for config inside `client/` (the root) — works locally by accident but fails in Docker.
+
+### P8: Docker Required for Browser QA
+The `browser_subagent` tool uses Playwright in Docker. If Docker Desktop is not running, `open_browser_url` fails with `ERR_CONNECTION_REFUSED`.
+
+### P9: Vite Alias Keys — No Trailing Slash
+Use `"@"` not `"@/"` as Vite alias keys. Trailing slashes don't match imports like `@/lib/trpc`.
+
 ---
 
 ## Orchestrator Protocol
@@ -47,17 +56,14 @@ Claude Code and Codex share the filesystem. Never dispatch two workers to the sa
 | Codex CLI | `codex exec "<prompt>"` | `codex-instructions.md` |
 | Browser QA | `browser_subagent` | N/A |
 
-### Dispatch Syntax (working patterns from LakeStevens)
+### Dispatch Syntax (corrected — see `.agents/workflows/dispatch.md` for full details)
 
 ```bash
-# Claude Code — background worker
-screen -dmS claude-work bash -c 'claude -p "Read CLAUDE.md first. TASK: ..." --dangerously-skip-permissions 2>&1 | tee /tmp/claude-output.log'
+# Claude Code — direct invocation (DO NOT use screen+tee — produces empty logs)
+claude -p "Read CLAUDE.md first. TASK: ..." --dangerously-skip-permissions 2>&1 | tail -5
 
-# Codex CLI — background worker (needs TTY via script)
-screen -dmS codex-work bash -c 'script -q /dev/null codex --full-auto "Read codex-instructions.md first. TASK: ..." 2>&1 | tee /tmp/codex-output.log'
-
-# Check output
-screen -r claude-work   # or: cat /tmp/claude-output.log
+# Max 5 files per dispatch. Break larger tasks into sequential batches.
+# Use run_command with WaitMsBeforeAsync: 300000 and monitor with command_status.
 ```
 
 ### Dispatch Template
@@ -132,6 +138,23 @@ git worktree remove ../staff-sync-<feature>
 2. Commit with conventional prefix: `feat:`, `fix:`, `docs:`, `refactor:`.
 3. Push to origin.
 
+## Docker Workflow
+
+**Dev server runs in Docker** (same pattern as LakeStevens/IPC):
+```bash
+# Build and start
+docker compose up --build -d
+
+# Check logs
+docker compose logs --tail 10
+
+# Stop
+docker compose down
+```
+
+Port 3000 serves Express + Vite dev middleware. Data volume persists SQLite DB.
+
 ## QA Protocol
 
-Follow `.agents/workflows/qa.md` after every phase. The QA workflow uses `browser_subagent` — not dispatched workers.
+Follow `.agents/workflows/qa.md` after every phase. QA uses Docker + `browser_subagent`.
+**Prerequisite:** Docker Desktop must be running (P8).

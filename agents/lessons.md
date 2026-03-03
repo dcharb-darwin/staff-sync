@@ -29,3 +29,49 @@
 - 7-file memory bank went stale mid-session (`current-state.md` stuck at Module 1 while Modules 2-3 were built)
 - Phase-based updates work better than timer-based anti-drift
 - Simplified to 2 files: sessions.md + lessons.md
+
+---
+
+## Session 1 — Staff Sync MVP Build (2026-03-02)
+
+### Claude Code Dispatch
+
+**Screen + tee doesn't capture Claude output.** Claude Code CLI uses an interactive terminal mode — `screen -dmS name bash -c 'claude -p "..." 2>&1 | tee /tmp/output.log'` produces empty log files. The screen session completes but no output is captured.
+
+**Working dispatch pattern:** Run Claude directly (no screen wrapper) and wait for it:
+```bash
+claude -p "..." --dangerously-skip-permissions 2>&1 | tail -5
+```
+Use `run_command` with large `WaitMsBeforeAsync` (300000) and monitor via `command_status`. This captures the tail output and provides exit code.
+
+**Don't one-shot massive prompts.** A 200-line prompt covering all 23 files failed silently. Breaking into 3–4 focused tasks of 2–5 files each worked reliably:
+- Task 1: Project config files (5 files) — ✅ partial (3/5)
+- Task 2: UI components (18 files) — ✅ complete
+- Task 3: Server foundation (5 files) — ✅ complete (2,308 lines)
+- Task 4+5: Pages (5 files, split into 2 parallel dispatches) — ✅ complete
+
+**Parallel dispatches work.** Two Claude instances editing non-overlapping files completed successfully in parallel. Just ensure file targets don't overlap.
+
+### Vite Configuration
+
+**Alias keys: no trailing slashes.** `"@/"` does NOT match imports like `@/lib/trpc`. Must use `"@"` (without trailing slash) as the alias key. This caused the first browser load failure.
+
+**`import.meta.dirname` not `__dirname`.** ESM modules don't have `__dirname`. Use `import.meta.dirname` (Node 21.2+). This applies to both `vite.config.ts` and `server/_core/index.ts`.
+
+**Vite dev middleware needs explicit `configFile`.** When creating Vite programmatically in `server/_core/index.ts` with `createServer({ root: '../../client' })`, Vite looks for `vite.config.ts` inside the `client/` directory — but our config is at the project root. Must pass `configFile: path.resolve(import.meta.dirname, '../../vite.config.ts')` explicitly. This works locally by accident (Vite walks up the directory tree) but fails in Docker.
+
+### Database
+
+**Tables don't auto-create with Drizzle.** Drizzle ORM defines schema in TypeScript but doesn't auto-create SQLite tables. For a mockup, raw `CREATE TABLE IF NOT EXISTS` SQL in `db/index.ts` is simpler than running `drizzle-kit push` at startup. The seed function tries to query tables immediately, so creation must happen before the seed call.
+
+### Docker
+
+**Docker is required for browser_subagent.** The browser QA tool uses Playwright in Docker. If Docker Desktop is not running, `open_browser_url` fails with `ERR_CONNECTION_REFUSED`. Always start Docker before browser QA.
+
+**Docker dev server: same Dockerfile pattern as LakeStevens.** `FROM node:22-slim`, `npm ci`, `EXPOSE 3000`, `CMD npm run dev`. Single port for Express + Vite dev middleware.
+
+### Process
+
+**`npm run dev | head -30` blocks.** Piping the dev server through `head` causes the shell to wait for the pipe to close, which never happens since the server keeps running. Use `run_command` with background (`WaitMsBeforeAsync: 10000`) instead, then check logs separately.
+
+**Always delete stale DB before restart.** `rm -f data/staff-sync.db` before `npm run dev` ensures clean seed data. Otherwise the seed check (`if users > 0, skip`) keeps old potentially-mismatched data.
