@@ -298,14 +298,14 @@ export default function Dashboard() {
               <div className="space-y-3">
                 {data.readinessStats.fail > 0 && (
                   <Link href="/readiness">
-                    <div className="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-3 cursor-pointer hover:shadow-md transition-shadow">
-                      <AlertTriangle className="h-4 w-4 text-red-600 mt-0.5 shrink-0" />
+                    <div className="flex items-start gap-3 rounded-lg border border-rose-200 bg-rose-50 p-3 cursor-pointer hover:shadow-md transition-shadow">
+                      <AlertTriangle className="h-4 w-4 text-rose-600 mt-0.5 shrink-0" />
                       <div>
-                        <p className="text-sm font-medium text-red-800">
+                        <p className="text-sm font-medium text-rose-900">
                           {data.readinessStats.fail} Failed Check
                           {data.readinessStats.fail !== 1 ? "s" : ""}
                         </p>
-                        <p className="text-xs text-red-600 mt-0.5">
+                        <p className="text-xs text-rose-600 mt-0.5">
                           Requires immediate attention before day-one
                         </p>
                       </div>
@@ -317,7 +317,7 @@ export default function Dashboard() {
                     <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 cursor-pointer hover:shadow-md transition-shadow">
                       <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
                       <div>
-                        <p className="text-sm font-medium text-amber-800">
+                        <p className="text-sm font-medium text-amber-900">
                           {data.readinessStats.warning} Warning
                           {data.readinessStats.warning !== 1 ? "s" : ""}
                         </p>

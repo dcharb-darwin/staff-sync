@@ -155,10 +155,10 @@ export default function EISForm() {
                     <Badge
                         className={
                             isSubmitted
-                                ? "bg-green-100 text-green-800"
+                                ? "bg-emerald-50 text-emerald-900 border border-emerald-200 font-medium"
                                 : bothComplete
-                                  ? "bg-blue-100 text-blue-800"
-                                  : "bg-amber-100 text-amber-800"
+                                  ? "bg-sky-50 text-sky-900 border border-sky-200 font-medium"
+                                  : "bg-amber-50 text-amber-900 border border-amber-200 font-medium"
                         }
                     >
                         {overallStatus}
@@ -428,7 +428,7 @@ export default function EISForm() {
             {/* Footer */}
             <div className="flex items-center justify-between rounded-lg border bg-white p-4">
                 {isSubmitted ? (
-                    <div className="flex items-center gap-2 text-sm text-green-700">
+                    <div className="flex items-center gap-2 text-sm text-emerald-700">
                         <CheckCircle className="h-4 w-4" />
                         Submitted to Service Desk on{" "}
                         {format(

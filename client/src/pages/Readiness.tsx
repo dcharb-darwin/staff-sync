@@ -148,18 +148,18 @@ export default function Readiness() {
             {/* Summary Cards */}
             <div className="grid gap-4 sm:grid-cols-3">
                 <Card
-                    className={`border-green-200 bg-green-50 cursor-pointer transition-shadow ${statusFilter === "pass" ? "ring-2 ring-green-500 shadow-md" : "hover:shadow-md"}`}
+                    className={`border-emerald-200 bg-emerald-50 cursor-pointer transition-shadow ${statusFilter === "pass" ? "ring-2 ring-emerald-500 shadow-md" : "hover:shadow-md"}`}
                     onClick={() => setStatusFilter(statusFilter === "pass" ? null : "pass")}
                 >
                     <CardContent className="flex items-center gap-4 pt-6">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
-                            <CheckCircle className="h-6 w-6 text-green-600" />
+                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100">
+                            <CheckCircle className="h-6 w-6 text-emerald-600" />
                         </div>
                         <div>
-                            <p className="text-2xl font-bold text-green-800">
+                            <p className="text-2xl font-bold text-emerald-900">
                                 {readyCount}
                             </p>
-                            <p className="text-sm text-green-600">
+                            <p className="text-sm text-emerald-600">
                                 Checks Passing
                             </p>
                         </div>
@@ -175,7 +175,7 @@ export default function Readiness() {
                             <AlertTriangle className="h-6 w-6 text-amber-500" />
                         </div>
                         <div>
-                            <p className="text-2xl font-bold text-amber-800">
+                            <p className="text-2xl font-bold text-amber-900">
                                 {warningCount}
                             </p>
                             <p className="text-sm text-amber-600">
@@ -186,18 +186,18 @@ export default function Readiness() {
                 </Card>
 
                 <Card
-                    className={`border-red-200 bg-red-50 cursor-pointer transition-shadow ${statusFilter === "fail" ? "ring-2 ring-red-500 shadow-md" : "hover:shadow-md"}`}
+                    className={`border-rose-200 bg-rose-50 cursor-pointer transition-shadow ${statusFilter === "fail" ? "ring-2 ring-rose-500 shadow-md" : "hover:shadow-md"}`}
                     onClick={() => setStatusFilter(statusFilter === "fail" ? null : "fail")}
                 >
                     <CardContent className="flex items-center gap-4 pt-6">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
-                            <XCircle className="h-6 w-6 text-red-600" />
+                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-rose-100">
+                            <XCircle className="h-6 w-6 text-rose-600" />
                         </div>
                         <div>
-                            <p className="text-2xl font-bold text-red-800">
+                            <p className="text-2xl font-bold text-rose-900">
                                 {failCount}
                             </p>
-                            <p className="text-sm text-red-600">
+                            <p className="text-sm text-rose-600">
                                 Not Ready
                             </p>
                         </div>
@@ -311,7 +311,7 @@ function EmployeeCard({
                         <span className="font-medium text-sm truncate">{employeeName}</span>
                         <div className="shrink-0">
                             {overallStatus === "unknown" ? (
-                                <Badge className="bg-slate-100 text-slate-700">No Checks</Badge>
+                                <Badge className="bg-slate-50 text-slate-900 border border-slate-200 font-medium">No Checks</Badge>
                             ) : (
                                 <Badge className={validationStatusBadgeClass[overallStatus] ?? ""}>
                                     {overallStatus === "pass" ? "Ready" : overallStatus === "warning" ? "Attention" : "Not Ready"}
@@ -415,7 +415,7 @@ function EmployeeRow({
                 </div>
                 <div className="shrink-0">
                     {overallStatus === "unknown" ? (
-                        <Badge className="bg-slate-100 text-slate-700">
+                        <Badge className="bg-slate-50 text-slate-900 border border-slate-200 font-medium">
                             No Checks
                         </Badge>
                     ) : (

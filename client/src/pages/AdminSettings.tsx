@@ -137,9 +137,9 @@ const INTEGRATIONS: Integration[] = [
 ];
 
 const INTEGRATION_STATUS_STYLES: Record<IntegrationStatus, string> = {
-  connected: "bg-green-100 text-green-700 border-green-200",
-  pending: "bg-amber-100 text-amber-700 border-amber-200",
-  unavailable: "bg-slate-100 text-slate-600 border-slate-200",
+  connected: "bg-emerald-50 text-emerald-900 border border-emerald-200 font-medium",
+  pending: "bg-amber-50 text-amber-900 border border-amber-200 font-medium",
+  unavailable: "bg-slate-50 text-slate-900 border border-slate-200 font-medium",
 };
 
 const INTEGRATION_STATUS_LABELS: Record<IntegrationStatus, string> = {
@@ -273,8 +273,8 @@ export default function AdminSettings() {
         <Badge
           className={
             isMvp
-              ? "bg-blue-100 text-blue-700 border-blue-200"
-              : "bg-green-100 text-green-700 border-green-200"
+              ? "bg-sky-50 text-sky-900 border border-sky-200 font-medium"
+              : "bg-emerald-50 text-emerald-900 border border-emerald-200 font-medium"
           }
         >
           {isMvp ? "MVP" : "Vision"}
@@ -325,7 +325,7 @@ export default function AdminSettings() {
                     <span className="text-sm text-muted-foreground">
                       Environment
                     </span>
-                    <Badge className="bg-amber-100 text-amber-700 border-amber-200">
+                    <Badge className="bg-amber-50 text-amber-900 border border-amber-200 font-medium">
                       Development
                     </Badge>
                   </div>
@@ -337,8 +337,8 @@ export default function AdminSettings() {
                     <Badge
                       className={
                         isMvp
-                          ? "bg-blue-100 text-blue-700 border-blue-200"
-                          : "bg-green-100 text-green-700 border-green-200"
+                          ? "bg-sky-50 text-sky-900 border border-sky-200 font-medium"
+                          : "bg-emerald-50 text-emerald-900 border border-emerald-200 font-medium"
                       }
                     >
                       {viewMode.toUpperCase()}
@@ -429,7 +429,7 @@ export default function AdminSettings() {
                     {integration.note && (
                       <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3">
                         <Info className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
-                        <p className="text-sm text-amber-800">
+                        <p className="text-sm text-amber-900">
                           {integration.note}
                         </p>
                       </div>
@@ -480,7 +480,7 @@ export default function AdminSettings() {
             {isMvp && (
               <div className="flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 p-3">
                 <Info className="h-4 w-4 text-blue-600 shrink-0" />
-                <p className="text-sm text-blue-800">
+                <p className="text-sm text-blue-900">
                   Notification settings are read-only in MVP mode. Switch to
                   Vision mode to edit templates and toggle notifications.
                 </p>
@@ -796,7 +796,7 @@ export default function AdminSettings() {
                             {user.email}
                           </td>
                           <td className="py-3 px-2">
-                            <Badge className="bg-blue-100 text-blue-700 border-blue-200">
+                            <Badge className="bg-sky-50 text-sky-900 border border-sky-200 font-medium">
                               {ROLE_LABELS[user.role]}
                             </Badge>
                           </td>

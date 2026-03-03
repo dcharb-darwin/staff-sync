@@ -2,37 +2,36 @@ import type { ProcessType, ProcessStatus, TaskStatus } from "@shared/types";
 
 /**
  * Shared badge style maps — single source of truth for type/status colors.
- * Fixes audit items #10, #13, #14: eliminates duplication across 3 pages
- * and standardizes transfer badge to amber (was purple in ProcessDetail).
+ * Uses bg-*-50 / text-*-900 / border-*-200 for readable contrast on light theme.
  */
 
 export const typeBadgeClass: Record<ProcessType, string> = {
-    onboarding: "bg-blue-100 text-blue-800 border-blue-200",
-    transfer: "bg-amber-100 text-amber-800 border-amber-200",
-    offboarding: "bg-red-100 text-red-800 border-red-200",
+    onboarding: "bg-sky-50 text-sky-900 border border-sky-200 font-medium",
+    transfer: "bg-amber-50 text-amber-900 border border-amber-200 font-medium",
+    offboarding: "bg-rose-50 text-rose-900 border border-rose-200 font-medium",
 };
 
 export const statusBadgeClass: Record<ProcessStatus, string> = {
-    initiated: "border-slate-300 text-slate-700",
-    in_progress: "bg-blue-100 text-blue-800 border-blue-200",
-    pending_review: "bg-amber-100 text-amber-800 border-amber-200",
-    completed: "bg-green-100 text-green-800 border-green-200",
+    initiated: "bg-slate-50 text-slate-900 border border-slate-200 font-medium",
+    in_progress: "bg-sky-50 text-sky-900 border border-sky-200 font-medium",
+    pending_review: "bg-amber-50 text-amber-900 border border-amber-200 font-medium",
+    completed: "bg-emerald-50 text-emerald-900 border border-emerald-200 font-medium",
 };
 
 export const taskStatusBadgeClass: Record<TaskStatus, string> = {
-    pending: "bg-slate-100 text-slate-700",
-    in_progress: "bg-blue-100 text-blue-800",
-    completed: "bg-green-100 text-green-800",
-    skipped: "bg-slate-50 text-slate-500",
+    pending: "bg-slate-50 text-slate-900 border border-slate-200 font-medium",
+    in_progress: "bg-sky-50 text-sky-900 border border-sky-200 font-medium",
+    completed: "bg-emerald-50 text-emerald-900 border border-emerald-200 font-medium",
+    skipped: "bg-gray-50 text-gray-500 border border-gray-200",
 };
 
 export const validationStatusBadgeClass: Record<string, string> = {
-    pass: "bg-green-100 text-green-800",
-    warning: "bg-amber-100 text-amber-800",
-    fail: "bg-red-100 text-red-800",
+    pass: "bg-emerald-50 text-emerald-900 border border-emerald-200 font-medium",
+    warning: "bg-amber-50 text-amber-900 border border-amber-200 font-medium",
+    fail: "bg-rose-50 text-rose-900 border border-rose-200 font-medium",
 };
 
 export const formTypeBadgeClass: Record<string, string> = {
-    eis: "bg-blue-100 text-blue-800 border-blue-200",
-    bois: "bg-teal-100 text-teal-800 border-teal-200",
+    eis: "bg-sky-50 text-sky-900 border border-sky-200 font-medium",
+    bois: "bg-teal-50 text-teal-900 border border-teal-200 font-medium",
 };
