@@ -44,6 +44,41 @@ Use `"@"` not `"@/"` as Vite alias keys. Trailing slashes don't match imports li
 
 ---
 
+## DESIGN PRINCIPLES (enforced on all UI work)
+
+### D1: Universal Drill-Down + Source Provenance
+Every data item displayed in the UI **must be clickable** and navigate to its detail view. Every detail view must show **where the data came from** — link to the source document, system, or process that generated it.
+
+- KPI card → drill into the list of entities that compose that number
+- Employee name → navigate to process detail
+- Process badge → navigate to process detail
+- Task → show owner, timestamps, and source SOP/checklist reference
+- Validation check → show which system (AD, Infor, form) the data was compared against
+- Form fields → reference which SOP section defines that field
+
+**Pattern:** Use `<Link>` from wouter on all identifiers, badges, and counts. Never display a data point that can't be explored further.
+
+### D2: Card ↔ List Toggle
+Wherever data is displayed as cards (KPI grid, employee cards, process cards), provide a **toggle to switch between card view and list/table view**. Use a shared `ViewToggle` component with icons (LayoutGrid / List from lucide-react).
+
+- Dashboard KPI breakdown → toggle to table
+- Process list → toggle between cards and compact table rows
+- Readiness employees → toggle between cards and table
+- Store preference in localStorage so it persists
+
+### D3: Visual Parity Across Darwin Projects
+Staff Sync must be **indistinguishable in look and feel** from TaskLine and Invoice Processing. Same:
+- oklch design tokens (blue-600 accent, slate-50 bg, white cards, shadow-sm)
+- shadcn/ui component patterns (Card, Badge, Button variants)
+- Typography (InterVariable / system-ui stack)
+- Spacing (container utility, py-8 main, p-6 cards)
+- Navigation pattern (sticky header, blue-50 active highlight)
+- Animation patterns (framer-motion for page transitions, hover states on interactive elements)
+
+> If you build a component and it looks different from the same component in TaskLine, it's wrong.
+
+---
+
 ## Orchestrator Protocol
 
 **Antigravity is the ORCHESTRATOR, not a worker.** It reads this file, plans work, dispatches to Claude Code CLI or Codex CLI, monitors results, and reports to the user.

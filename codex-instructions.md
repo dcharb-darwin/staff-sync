@@ -62,6 +62,14 @@ shared/types.ts
 - **`data/` directory** must exist before SQLite DB opens
 - **Always `await`** Drizzle operations
 
+## Design Principles (MANDATORY — see AGENTS.md for full details)
+
+**D1: Universal Drill-Down + Source Provenance.** Every data item shown must be clickable → navigates to detail. Every detail view shows where data came from (system name, SOP reference, source document link). Never display a data point that can't be explored.
+
+**D2: Card ↔ List Toggle.** Wherever cards are used, add a toggle to switch to list/table view. Use `ViewToggle` component (LayoutGrid / List icons). Store preference in localStorage.
+
+**D3: Visual Parity.** Must be indistinguishable from TaskLine and Invoice Processing. Same oklch tokens, shadcn patterns, spacing, typography, animations. If it looks different from TaskLine, it's wrong.
+
 ## Read Order (MANDATORY)
 
 1. `AGENTS.md` → 2. `PRD.MD` → 3. This file
