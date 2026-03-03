@@ -103,3 +103,28 @@ Use `run_command` with large `WaitMsBeforeAsync` (300000) and monitor via `comma
 **Claude workers add components but may not wire conditional rendering.** Two workers correctly imported ViewToggle and added `useViewMode` state, but didn't always connect the state to `{viewMode === "card" ? <CardLayout> : <ListLayout>}` branches. 
 
 **Fix:** When dispatching view-mode work, explicitly state: "When card mode: render `<div className='grid grid-cols-3'>` with `<Card>` per item. When list mode: render existing layout. Use `viewMode === 'card' ? (...) : (...)` ternary."
+
+---
+
+## Session 3 — Documentation Package (2026-03-02)
+
+### Agent CLI Timeouts
+
+**Both Claude Code and Codex CLI timed out (15+ min, zero output) during documentation dispatch.** Attempted two rounds of parallel dispatches — neither produced any files. Possible causes: supermemory/GPT extension conflicts, CLI auth session expiration, or prompt complexity for doc-only tasks.
+
+**First dispatch failed to shell escaping.** Using double-quoted prompts with markdown image syntax (`![alt](path)`) caused zsh `event not found` error — zsh interprets `!` as history expansion inside double quotes. **Fix:** Always use single-quoted prompts for Claude/Codex CLI dispatch to avoid zsh special character expansion (`!`, `$`, backticks).
+
+**Fallback: orchestrator writes docs directly.** When agents are unavailable, documentation-only work (markdown files, no code changes) is within orchestrator scope — these are not implementation code files. All 5 docs (1,158 lines) were written and committed in ~10 minutes vs 15+ minutes of failed agent waiting.
+
+### Documentation Workflow
+
+**Darwin doc package = 5 files.** Per `agents/darwin-standards.md` §5 and the documentation KI:
+1. `docs/DATA_MODEL.md` — schema reference + ER diagram + PII classification
+2. `docs/MVP_PRD.md` — Run 1 scope with screenshots
+3. `docs/VISION_PRD.md` — Run 2 scope with roadmap
+4. `docs/WALKTHROUGH.md` — developer guide + QA evidence
+5. `README.md` (root) — GitHub landing page
+
+**Write foundational docs first.** DATA_MODEL.md should be written before PRDs since both reference it. MVP_PRD before VISION_PRD since Vision references MVP scope.
+
+**Screenshots use relative paths for GitHub rendering.** All image embeds must use `screenshots/mvp-dashboard.png` (relative to `docs/`), not absolute paths, so they render correctly on GitHub.
