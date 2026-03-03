@@ -5,7 +5,8 @@
 ## ⚠️ CRITICAL — Never Violate
 
 > **`await` ALL Drizzle ops | Light theme only | No PII ever**
-> **Full rules: [`agents/standards.md`](agents/standards.md) — READ BEFORE CODING**
+> **Darwin standards: [`agents/darwin-standards.md`](agents/darwin-standards.md)** (stack, design, architecture)
+> **Project rules: [`agents/standards.md`](agents/standards.md)** (pitfalls P1–P10, design principles D1–D3)
 
 ---
 
@@ -66,9 +67,10 @@ shared/types.ts            ← Shared type definitions + label maps
 
 ## Read Order (MANDATORY)
 
-1. `agents/standards.md` — pitfalls P1–P10 + design principles D1–D3
-2. `PRD.MD` — business requirements, process flows, data classification
-3. This file — architecture map, schema, conventions
+1. `agents/darwin-standards.md` — cross-project standards (stack, design, architecture)
+2. `agents/standards.md` — project pitfalls P1–P10 + design principles D1–D3
+3. `PRD.MD` — business requirements, process flows, data classification
+4. This file — architecture map, schema, conventions
 
 ## After Every Change
 

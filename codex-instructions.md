@@ -5,7 +5,8 @@
 ## ⚠️ CRITICAL — Never Violate
 
 > **`await` ALL Drizzle ops | Light theme only | No PII ever**
-> **Full rules: [`agents/standards.md`](agents/standards.md) — READ BEFORE CODING**
+> **Darwin standards: [`agents/darwin-standards.md`](agents/darwin-standards.md)** (stack, design, architecture)
+> **Project rules: [`agents/standards.md`](agents/standards.md)** (pitfalls P1–P10, design principles D1–D3)
 
 ---
 
@@ -59,4 +60,4 @@ shared/types.ts
 
 ## Read Order (MANDATORY)
 
-1. `agents/standards.md` → 2. `PRD.MD` → 3. This file
+1. `agents/darwin-standards.md` → 2. `agents/standards.md` → 3. `PRD.MD` → 4. This file

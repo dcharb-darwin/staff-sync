@@ -15,8 +15,9 @@ Remote: `https://github.com/dcharb-darwin/staff-sync.git`
 
 ## ⚠️ Standards — READ FIRST
 
-> **All pitfalls (P1–P10) and design principles (D1–D3) are in [`agents/standards.md`](agents/standards.md).**
-> Workers, orchestrator, and QA all reference this single file. Update rules there — not here.
+> **Cross-project standards: [`agents/darwin-standards.md`](agents/darwin-standards.md)** — tech stack, design system, architecture, launchpad process
+> **Project pitfalls (P1–P10) + design principles (D1–D3): [`agents/standards.md`](agents/standards.md)**
+> Update rules there — not here.
 
 **Critical (never violate):** `await` ALL Drizzle ops | Light theme only | No PII ever
 
@@ -130,6 +131,7 @@ Follow `.agents/workflows/qa.md` after every phase. QA uses Docker + `browser_su
 
 | File | Purpose | Update Cadence |
 |------|---------|----------------|
+| `agents/darwin-standards.md` | Cross-project reference (stack, design, architecture) | When Darwin-wide standards change |
+| `agents/standards.md` | Project pitfalls P1–P10 + Design Principles D1–D3 | When project rules change |
 | `agents/sessions.md` | Append-only session log | After every phase |
 | `agents/lessons.md` | Pitfalls, gotchas, things that broke | When something breaks |
-| `agents/standards.md` | Pitfalls P1–P10 + Design Principles D1–D3 | When rules change |
