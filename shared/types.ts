@@ -72,3 +72,22 @@ export const VALIDATION_CHECK_LABELS: Record<ValidationCheckType, string> = {
     service_desk_provisioning: "Service Desk Provisioning",
     non_ad_systems: "Non-AD Systems Provisioning",
 };
+
+// Process status display labels (audit fix #14 — was duplicated in 3 pages)
+export const PROCESS_STATUS_LABELS: Record<ProcessStatus, string> = {
+    initiated: "Initiated",
+    in_progress: "In Progress",
+    pending_review: "Pending Review",
+    completed: "Completed",
+};
+
+// Validation source provenance (audit fix #4 — D1 compliance)
+export const VALIDATION_SOURCE_LABELS: Record<ValidationCheckType, string> = {
+    ad_account_exists: "Active Directory",
+    name_consistency: "Active Directory + Infor HR",
+    email_match: "Active Directory vs Infor HR",
+    badge_id_reconciliation: "Badge System + Infor HR",
+    form_complete: "EIS/BOIS Form",
+    service_desk_provisioning: "Service Desk Ticketing",
+    non_ad_systems: "Non-AD Provisioning Systems",
+};

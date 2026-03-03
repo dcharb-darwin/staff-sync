@@ -15,48 +15,32 @@ import {
   PROCESS_TYPES,
   PROCESS_STATUSES,
   PROCESS_TYPE_LABELS,
+  PROCESS_STATUS_LABELS,
 } from "@shared/types";
 import type { ProcessType, ProcessStatus } from "@shared/types";
+import { typeBadgeClass, statusBadgeClass } from "@/lib/badge-styles";
+import { ViewToggle, useViewMode } from "@/components/ViewToggle";
 import { Link } from "wouter";
 import { Search, Filter } from "lucide-react";
 import { format } from "date-fns";
-
-const typeBadgeClass: Record<string, string> = {
-  onboarding: "bg-blue-100 text-blue-700 border-blue-200",
-  transfer: "bg-amber-100 text-amber-700 border-amber-200",
-  offboarding: "bg-red-100 text-red-700 border-red-200",
-};
-
-const statusBadgeClass: Record<string, string> = {
-  initiated: "border-slate-300 text-slate-600",
-  in_progress: "bg-blue-100 text-blue-700 border-blue-200",
-  pending_review: "bg-amber-100 text-amber-700 border-amber-200",
-  completed: "bg-green-100 text-green-700 border-green-200",
-};
-
-const statusLabels: Record<string, string> = {
-  initiated: "Initiated",
-  in_progress: "In Progress",
-  pending_review: "Pending Review",
-  completed: "Completed",
-};
 
 export default function Processes() {
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [viewMode, setViewMode] = useViewMode("processes");
 
   const queryInput =
     typeFilter === "all" && statusFilter === "all"
       ? {}
       : {
-          ...(typeFilter !== "all" && {
-            processType: typeFilter as ProcessType,
-          }),
-          ...(statusFilter !== "all" && {
-            status: statusFilter as ProcessStatus,
-          }),
-        };
+        ...(typeFilter !== "all" && {
+          processType: typeFilter as ProcessType,
+        }),
+        ...(statusFilter !== "all" && {
+          status: statusFilter as ProcessStatus,
+        }),
+      };
 
   const { data, isLoading } = trpc.processes.list.useQuery(queryInput);
 
@@ -112,7 +96,7 @@ export default function Processes() {
                 <SelectItem value="all">All Statuses</SelectItem>
                 {PROCESS_STATUSES.map((s) => (
                   <SelectItem key={s} value={s}>
-                    {statusLabels[s]}
+                    {PROCESS_STATUS_LABELS[s]}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -123,12 +107,13 @@ export default function Processes() {
 
       {/* Process List */}
       <Card className="bg-white">
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <CardTitle className="text-base">
             {isLoading
               ? "Loading..."
               : `${filtered?.length ?? 0} Process${(filtered?.length ?? 0) !== 1 ? "es" : ""}`}
           </CardTitle>
+          <ViewToggle mode={viewMode} onModeChange={setViewMode} />
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -138,52 +123,103 @@ export default function Processes() {
               ))}
             </div>
           ) : filtered && filtered.length > 0 ? (
-            <div className="divide-y">
-              {filtered.map((proc) => (
-                <Link
-                  key={proc.id}
-                  href={`/processes/${proc.id}`}
-                  className="flex items-center justify-between py-3 px-3 -mx-3 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer"
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-w-0">
-                    <span className="font-medium text-sm">
-                      {proc.employee?.firstName} {proc.employee?.lastName}
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <Badge
-                        className={typeBadgeClass[proc.processType] ?? ""}
-                      >
-                        {PROCESS_TYPE_LABELS[
-                          proc.processType as ProcessType
-                        ] ?? proc.processType}
-                      </Badge>
-                      <Badge
-                        className={statusBadgeClass[proc.status] ?? ""}
-                      >
-                        {statusLabels[proc.status] ?? proc.status}
-                      </Badge>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4 text-xs text-muted-foreground shrink-0">
-                    {proc.employee?.startDate && (
-                      <span className="hidden md:inline">
-                        Start:{" "}
-                        {format(
-                          new Date(proc.employee.startDate),
-                          "MMM d, yyyy"
-                        )}
+            viewMode === "card" ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filtered.map((proc) => (
+                  <Link
+                    key={proc.id}
+                    href={`/processes/${proc.id}`}
+                    className="block"
+                  >
+                    <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
+                      <CardContent className="pt-4 pb-4 space-y-3">
+                        <div className="font-medium text-sm">
+                          {proc.employee?.firstName} {proc.employee?.lastName}
+                        </div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge
+                            className={typeBadgeClass[proc.processType as ProcessType] ?? ""}
+                          >
+                            {PROCESS_TYPE_LABELS[
+                              proc.processType as ProcessType
+                            ] ?? proc.processType}
+                          </Badge>
+                          <Badge
+                            className={statusBadgeClass[proc.status as ProcessStatus] ?? ""}
+                          >
+                            {PROCESS_STATUS_LABELS[proc.status as ProcessStatus] ?? proc.status}
+                          </Badge>
+                        </div>
+                        <div className="space-y-1 text-xs text-muted-foreground">
+                          {proc.employee?.startDate && (
+                            <div>
+                              Start:{" "}
+                              {format(
+                                new Date(proc.employee.startDate),
+                                "MMM d, yyyy"
+                              )}
+                            </div>
+                          )}
+                          <div>
+                            Created:{" "}
+                            {proc.createdAt
+                              ? format(new Date(proc.createdAt), "MMM d, yyyy")
+                              : "—"}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="divide-y">
+                {filtered.map((proc) => (
+                  <Link
+                    key={proc.id}
+                    href={`/processes/${proc.id}`}
+                    className="flex items-center justify-between py-3 px-3 -mx-3 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-w-0">
+                      <span className="font-medium text-sm">
+                        {proc.employee?.firstName} {proc.employee?.lastName}
                       </span>
-                    )}
-                    <span className="hidden sm:inline">
-                      Created:{" "}
-                      {proc.createdAt
-                        ? format(new Date(proc.createdAt), "MMM d, yyyy")
-                        : "—"}
-                    </span>
-                  </div>
-                </Link>
-              ))}
-            </div>
+                      <div className="flex items-center gap-2">
+                        <Badge
+                          className={typeBadgeClass[proc.processType as ProcessType] ?? ""}
+                        >
+                          {PROCESS_TYPE_LABELS[
+                            proc.processType as ProcessType
+                          ] ?? proc.processType}
+                        </Badge>
+                        <Badge
+                          className={statusBadgeClass[proc.status as ProcessStatus] ?? ""}
+                        >
+                          {PROCESS_STATUS_LABELS[proc.status as ProcessStatus] ?? proc.status}
+                        </Badge>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4 text-xs text-muted-foreground shrink-0">
+                      {proc.employee?.startDate && (
+                        <span className="hidden md:inline">
+                          Start:{" "}
+                          {format(
+                            new Date(proc.employee.startDate),
+                            "MMM d, yyyy"
+                          )}
+                        </span>
+                      )}
+                      <span className="hidden sm:inline">
+                        Created:{" "}
+                        {proc.createdAt
+                          ? format(new Date(proc.createdAt), "MMM d, yyyy")
+                          : "—"}
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )
           ) : (
             <div className="flex flex-col items-center py-12 text-center">
               <Filter className="h-8 w-8 text-muted-foreground mb-3" />

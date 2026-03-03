@@ -22,8 +22,10 @@ import {
 } from "lucide-react";
 import {
     VALIDATION_CHECK_LABELS,
+    VALIDATION_SOURCE_LABELS,
     type ValidationCheckType,
 } from "@shared/types";
+import { ViewToggle, useViewMode } from "@/components/ViewToggle";
 import { format, addDays, isWithinInterval } from "date-fns";
 
 function ReadinessIcon({
@@ -51,6 +53,8 @@ function getOverallStatus(
 
 export default function Readiness() {
     const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
+    const [statusFilter, setStatusFilter] = useState<"pass" | "warning" | "fail" | null>(null);
+    const [viewMode, setViewMode] = useViewMode("readiness");
 
     const { data: stats, isLoading: statsLoading } =
         trpc.dashboard.stats.useQuery();
@@ -142,7 +146,10 @@ export default function Readiness() {
 
             {/* Summary Cards */}
             <div className="grid gap-4 sm:grid-cols-3">
-                <Card className="border-green-200 bg-green-50">
+                <Card
+                    className={`border-green-200 bg-green-50 cursor-pointer transition-shadow ${statusFilter === "pass" ? "ring-2 ring-green-500 shadow-md" : "hover:shadow-md"}`}
+                    onClick={() => setStatusFilter(statusFilter === "pass" ? null : "pass")}
+                >
                     <CardContent className="flex items-center gap-4 pt-6">
                         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
                             <CheckCircle className="h-6 w-6 text-green-600" />
@@ -158,7 +165,10 @@ export default function Readiness() {
                     </CardContent>
                 </Card>
 
-                <Card className="border-amber-200 bg-amber-50">
+                <Card
+                    className={`border-amber-200 bg-amber-50 cursor-pointer transition-shadow ${statusFilter === "warning" ? "ring-2 ring-amber-500 shadow-md" : "hover:shadow-md"}`}
+                    onClick={() => setStatusFilter(statusFilter === "warning" ? null : "warning")}
+                >
                     <CardContent className="flex items-center gap-4 pt-6">
                         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-100">
                             <AlertTriangle className="h-6 w-6 text-amber-500" />
@@ -174,7 +184,10 @@ export default function Readiness() {
                     </CardContent>
                 </Card>
 
-                <Card className="border-red-200 bg-red-50">
+                <Card
+                    className={`border-red-200 bg-red-50 cursor-pointer transition-shadow ${statusFilter === "fail" ? "ring-2 ring-red-500 shadow-md" : "hover:shadow-md"}`}
+                    onClick={() => setStatusFilter(statusFilter === "fail" ? null : "fail")}
+                >
                     <CardContent className="flex items-center gap-4 pt-6">
                         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
                             <XCircle className="h-6 w-6 text-red-600" />
@@ -193,11 +206,25 @@ export default function Readiness() {
 
             {/* Employee List */}
             <Card>
-                <CardHeader>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0">
                     <CardTitle className="flex items-center gap-2">
                         <Calendar className="h-5 w-5" />
                         Upcoming Start Dates
+                        {statusFilter && (
+                            <Badge
+                                className={
+                                    statusFilter === "pass"
+                                        ? "bg-green-100 text-green-700"
+                                        : statusFilter === "warning"
+                                            ? "bg-amber-100 text-amber-700"
+                                            : "bg-red-100 text-red-700"
+                                }
+                            >
+                                {statusFilter === "pass" ? "Passing" : statusFilter === "warning" ? "Attention" : "Not Ready"}
+                            </Badge>
+                        )}
                     </CardTitle>
+                    <ViewToggle mode={viewMode} onModeChange={setViewMode} />
                 </CardHeader>
                 <CardContent>
                     {sortedProcesses.length === 0 ? (
@@ -205,13 +232,31 @@ export default function Readiness() {
                             No upcoming employees with active onboarding
                             processes.
                         </p>
+                    ) : viewMode === "card" ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {sortedProcesses.map((proc) => {
+                                const emp = proc.employee;
+                                if (!emp) return null;
+
+                                return (
+                                    <EmployeeCard
+                                        key={proc.id}
+                                        processId={proc.id}
+                                        employeeName={`${emp.firstName} ${emp.lastName}`}
+                                        startDate={emp.startDate}
+                                        department={emp.department}
+                                        jobTitle={emp.jobTitle}
+                                        statusFilter={statusFilter}
+                                    />
+                                );
+                            })}
+                        </div>
                     ) : (
                         <div className="space-y-1">
                             {sortedProcesses.map((proc) => {
                                 const emp = proc.employee;
                                 if (!emp) return null;
 
-                                // Get validations from the process detail
                                 const isExpanded = expandedIds.has(proc.id);
 
                                 return (
@@ -224,6 +269,7 @@ export default function Readiness() {
                                         jobTitle={emp.jobTitle}
                                         isExpanded={isExpanded}
                                         onToggle={() => toggleExpand(proc.id)}
+                                        statusFilter={statusFilter}
                                     />
                                 );
                             })}
@@ -235,6 +281,81 @@ export default function Readiness() {
     );
 }
 
+function EmployeeCard({
+    processId,
+    employeeName,
+    startDate,
+    department,
+    jobTitle,
+    statusFilter,
+}: {
+    processId: number;
+    employeeName: string;
+    startDate: string | null;
+    department: string | null;
+    jobTitle: string | null;
+    statusFilter: "pass" | "warning" | "fail" | null;
+}) {
+    const { data: process } = trpc.processes.byId.useQuery({ id: processId });
+    const validations = process?.validations ?? [];
+    const overallStatus = getOverallStatus(validations);
+
+    if (statusFilter && overallStatus !== statusFilter) return null;
+
+    const passCount = validations.filter((v) => v.status === "pass").length;
+    const warnCount = validations.filter((v) => v.status === "warning").length;
+    const failCountLocal = validations.filter((v) => v.status === "fail").length;
+
+    return (
+        <Link href={`/processes/${processId}`} className="block">
+            <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
+                <CardContent className="pt-4 pb-4 space-y-3">
+                    <div className="flex items-center justify-between gap-2">
+                        <span className="font-medium text-sm truncate">{employeeName}</span>
+                        <div className="shrink-0">
+                            {overallStatus === "unknown" ? (
+                                <Badge className="bg-slate-100 text-slate-600">No Checks</Badge>
+                            ) : overallStatus === "pass" ? (
+                                <Badge className="bg-green-100 text-green-700">Ready</Badge>
+                            ) : overallStatus === "warning" ? (
+                                <Badge className="bg-amber-100 text-amber-700">Attention</Badge>
+                            ) : (
+                                <Badge className="bg-red-100 text-red-700">Not Ready</Badge>
+                            )}
+                        </div>
+                    </div>
+                    <div className="text-xs text-muted-foreground space-y-0.5">
+                        {jobTitle && <div>{jobTitle}</div>}
+                        {department && <div>{department}</div>}
+                        {startDate && (
+                            <div>Starts {format(new Date(startDate), "MMM d, yyyy")}</div>
+                        )}
+                    </div>
+                    {validations.length > 0 && (
+                        <div className="flex items-center gap-3 text-xs">
+                            {passCount > 0 && (
+                                <span className="flex items-center gap-1 text-green-600">
+                                    <CheckCircle className="h-3 w-3" /> {passCount}
+                                </span>
+                            )}
+                            {warnCount > 0 && (
+                                <span className="flex items-center gap-1 text-amber-500">
+                                    <AlertTriangle className="h-3 w-3" /> {warnCount}
+                                </span>
+                            )}
+                            {failCountLocal > 0 && (
+                                <span className="flex items-center gap-1 text-red-600">
+                                    <XCircle className="h-3 w-3" /> {failCountLocal}
+                                </span>
+                            )}
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+        </Link>
+    );
+}
+
 function EmployeeRow({
     processId,
     employeeName,
@@ -243,6 +364,7 @@ function EmployeeRow({
     jobTitle,
     isExpanded,
     onToggle,
+    statusFilter,
 }: {
     processId: number;
     employeeName: string;
@@ -251,10 +373,13 @@ function EmployeeRow({
     jobTitle: string | null;
     isExpanded: boolean;
     onToggle: () => void;
+    statusFilter: "pass" | "warning" | "fail" | null;
 }) {
     const { data: process } = trpc.processes.byId.useQuery({ id: processId });
     const validations = process?.validations ?? [];
     const overallStatus = getOverallStatus(validations);
+
+    if (statusFilter && overallStatus !== statusFilter) return null;
 
     return (
         <div className="rounded-md border">
@@ -346,6 +471,9 @@ function EmployeeRow({
                                                 {details.message}
                                             </p>
                                         )}
+                                        <p className="text-xs text-muted-foreground/70 mt-0.5">
+                                            Source: {VALIDATION_SOURCE_LABELS[check.checkType as ValidationCheckType] ?? check.checkType}
+                                        </p>
                                     </div>
                                 </div>
                             );

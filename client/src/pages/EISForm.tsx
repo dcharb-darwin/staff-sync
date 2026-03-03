@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams } from "wouter";
+import { useParams, Link } from "wouter";
 import { trpc } from "@/lib/trpc";
 import {
     Card,
@@ -14,7 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { CheckCircle, Clock } from "lucide-react";
+import { CheckCircle, Clock, ArrowLeft } from "lucide-react";
 import { format } from "date-fns";
 
 interface Section1Data {
@@ -58,6 +58,13 @@ export default function EISForm() {
             { id: processId },
             { enabled: !isNaN(processId) },
         );
+
+    const utils = trpc.useUtils();
+    const submitMutation = trpc.forms.submitToServiceDesk.useMutation({
+        onSuccess: () => {
+            utils.forms.getByProcessId.invalidate({ processId });
+        },
+    });
 
     const isLoading = formLoading || processLoading;
 
@@ -116,6 +123,14 @@ export default function EISForm() {
 
     return (
         <div className="space-y-6">
+            <Link
+                href={`/processes/${processId}`}
+                className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+                <ArrowLeft className="h-4 w-4" />
+                Back to Process
+            </Link>
+
             {/* Header */}
             <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="space-y-1">
@@ -429,8 +444,11 @@ export default function EISForm() {
                                 ? "Both sections complete. Ready to submit."
                                 : "Complete both sections before submitting."}
                         </p>
-                        <Button disabled={!bothComplete}>
-                            Submit to Service Desk
+                        <Button
+                            disabled={!bothComplete || submitMutation.isPending}
+                            onClick={() => submitMutation.mutate({ processId })}
+                        >
+                            {submitMutation.isPending ? "Submitting..." : "Submit to Service Desk"}
                         </Button>
                     </>
                 )}

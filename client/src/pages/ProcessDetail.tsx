@@ -21,28 +21,22 @@ import {
 } from "lucide-react";
 import {
     PROCESS_TYPE_LABELS,
+    PROCESS_STATUS_LABELS,
     ROLE_LABELS,
     VALIDATION_CHECK_LABELS,
+    VALIDATION_SOURCE_LABELS,
     type ProcessType,
+    type ProcessStatus,
+    type TaskStatus,
     type UserRole,
     type ValidationCheckType,
 } from "@shared/types";
+import {
+    typeBadgeClass,
+    statusBadgeClass,
+    taskStatusBadgeClass,
+} from "@/lib/badge-styles";
 import { format } from "date-fns";
-
-const statusColors: Record<string, string> = {
-    pending: "bg-slate-100 text-slate-700",
-    in_progress: "bg-blue-100 text-blue-700",
-    completed: "bg-green-100 text-green-700",
-    skipped: "bg-slate-50 text-slate-400",
-    initiated: "bg-slate-100 text-slate-700",
-    pending_review: "bg-amber-100 text-amber-700",
-};
-
-const processTypeColors: Record<string, string> = {
-    onboarding: "bg-blue-100 text-blue-700",
-    transfer: "bg-purple-100 text-purple-700",
-    offboarding: "bg-orange-100 text-orange-700",
-};
 
 function ValidationIcon({ status }: { status: string }) {
     if (status === "pass")
@@ -135,16 +129,17 @@ export default function ProcessDetail() {
                     <div className="flex items-center gap-2">
                         <Badge
                             className={
-                                processTypeColors[process.processType] ?? ""
+                                typeBadgeClass[process.processType as ProcessType] ?? ""
                             }
                         >
                             {PROCESS_TYPE_LABELS[process.processType as ProcessType] ??
                                 process.processType}
                         </Badge>
                         <Badge
-                            className={statusColors[process.status] ?? ""}
+                            className={statusBadgeClass[process.status as ProcessStatus] ?? ""}
                         >
-                            {process.status.replace(/_/g, " ")}
+                            {PROCESS_STATUS_LABELS[process.status as ProcessStatus] ??
+                                process.status}
                         </Badge>
                     </div>
                 </div>
@@ -218,11 +213,11 @@ export default function ProcessDetail() {
                                             task.ownerRole}
                                     </Badge>
                                     <Badge
-                                        className={`text-xs ${statusColors[task.status] ?? ""}`}
+                                        className={`text-xs ${taskStatusBadgeClass[task.status as TaskStatus] ?? ""}`}
                                     >
                                         {task.status === "in_progress"
-                                            ? "in progress"
-                                            : task.status}
+                                            ? "In Progress"
+                                            : task.status.charAt(0).toUpperCase() + task.status.slice(1)}
                                     </Badge>
                                     {task.completedAt && (
                                         <span className="text-xs text-muted-foreground flex items-center gap-1">
@@ -405,6 +400,9 @@ export default function ProcessDetail() {
                                                     {details.message}
                                                 </p>
                                             )}
+                                            <span className="mt-0.5 text-xs text-muted-foreground">
+                                                Source: {VALIDATION_SOURCE_LABELS[check.checkType as ValidationCheckType] ?? check.checkType}
+                                            </span>
                                         </div>
                                     </div>
                                 );
